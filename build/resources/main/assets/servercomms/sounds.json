@@ -1,0 +1,12 @@
+{
+    "item.wanderer_disc": {
+        "category": "item",
+        "subtitle": "item.wanderer_disc.sub",
+        "sounds": [
+            {
+                "name": "servercomms:item/wanderer_disc",
+                "stream": true
+            }
+        ]
+    }
+}

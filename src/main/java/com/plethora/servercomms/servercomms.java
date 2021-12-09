@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
@@ -17,20 +18,30 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.stream.Collectors;
 
+import com.plethora.servercomms.objects.lists.Items;
+import com.plethora.servercomms.objects.lists.Sounds;
+
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("servercomms")
 public class servercomms
 {
     // Directly reference a log4j logger.
     private static final Logger LOGGER = LogManager.getLogger();
+    public static final String MODID = "servercomms";
 
     public servercomms() {
+
+        IEventBus EventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        Items.register(EventBus);
+        Sounds.register(EventBus);
+
         // Register the setup method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+       EventBus.addListener(this::setup);
         // Register the enqueueIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::enqueueIMC);
+       EventBus.addListener(this::enqueueIMC);
         // Register the processIMC method for modloading
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
+       EventBus.addListener(this::processIMC);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -59,18 +70,29 @@ public class servercomms
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
-        // do something when the server starts
+        //Check if running client side
+        
+        boolean isClientSide = event.getServer().overworld().isClientSide();
+
+        if (isClientSide) {
+            LOGGER.info("Running on client side");
+        } else {
+            LOGGER.info("Running on server side");
+            
         LOGGER.info("Server Started! Pinging webserver!");
         
         //ping webserver
 
         ServerCommunicator sc = new ServerCommunicator("http://localhost");
 
-        String res = sc.get("/api/ping");
+        String res = sc.get("/api/string/ping");
 
         ResponseManager rm = new ResponseManager(res);
         
         LOGGER.info("Response: " + rm.toString());
+        }
+
+
 
     }
 
